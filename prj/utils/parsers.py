@@ -7,7 +7,6 @@ from urllib.request import urlopen
 class BS4:
     def __init__(self, url):
         self.url = url
-        # print(self.url)
         res = urlopen(self.url)
         html = res.read()
         self.soup = BeautifulSoup(html, "html.parser")
@@ -19,7 +18,6 @@ class BS4:
 class Selenium:
     def __init__(self, url):
         self.url = url
-        # self.driver = webdriver.Chrome('/path/to/chromedriver')
         self.driver = webdriver.Chrome()
         self.driver.get(self.url)
     

@@ -1,16 +1,18 @@
-from utils.parser import BS4, Selenium
-from utils import generic, const
+import re
+import utils.dicts, utils.times
+from utils.parsers import BS4, Selenium
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
-import re
+from conf import settings
 
 
 class KK_Selenium():
 
-    def __init__(self, url):
+    def __init__(self, url, wait_time):
         self.parser = Selenium(url)
         self.url = self.parser.url
+        self.wait_time = wait_time
         self.driver = self.parser.driver
         
 
@@ -21,7 +23,7 @@ class KK_Selenium():
 
         # pref => 都道府県
         pref_list = natl_top_soup.select('#zenkokuMap area')
-        url_list_rcs = generic.attr_dict(pref_list, "alt", "href")
+        url_list_rcs = utils.dicts.attr_dict(pref_list, "alt", "href")
         cgi_query = "?action_kouhyou_pref_search_condition_index=true"
         pref_url_dict = { k : natl_top_url[:-1] + v + cgi_query
             for k, v in url_list_rcs.items()}
@@ -33,10 +35,12 @@ class KK_Selenium():
         return filtered_pref_url_dict
 
 
-    def _wait(self):
+    def _wait(self, time=None):
+        if time is None:
+            time = self.wait_time
         # CookieのPHPSESSIDフィールドを削除 <= URLで直アクのため
         # self.driver.delete_cookie("PHPSESSID")
-        generic.wait()
+        utils.times.wait(time)
         return None
 
 
@@ -45,14 +49,11 @@ class KK_Selenium():
             houjin_checkbox_specifier: str = "//input[@type='checkbox' and @name='HoujinType[]']"
             houjin_checkboxes = self.driver.find_elements(By.XPATH, houjin_checkbox_specifier)
             if range == "all":
-                print(f"houjin is {houjin_checkboxes}")
                 for checkbox in houjin_checkboxes:
                     self.driver.execute_script("arguments[0].checked = true;", checkbox)
-                    print("test")
             return None
         select_checkbox()
         self._wait()
-        print("aiueo")
         self.driver.execute_script("document.querySelector('.btn-search').click();")
         self._wait()
         return None
@@ -70,14 +71,15 @@ class KK_Selenium():
         jigyosyo_html_list = list(map(lambda x: x.get_attribute("outerHTML"), jigyosyo_all))
         jigyosyo_soup_list = list(map(lambda x: BeautifulSoup(x, 'html.parser'), jigyosyo_html_list))
         jigyosyo_name_list = list(map(self.make_jigyosyo_dict, jigyosyo_soup_list))
+        return None
 
 
     def make_jigyosyo_dict(self, soup):
         jigyosyo_code = soup.select_one('.jigyosyoCd').text
         _jigyosyo_name = soup.select_one('.jigyosyoName').text
         jigyosyo_name = re.sub(r'[\u3000]', '_', _jigyosyo_name)
-        jigyosyoUrl = const.NATL_TOP_URL + soup.select_one('.detailBtn')['href'][1:]
-        fetch_date = generic.today()
+        jigyosyoUrl = self.url + soup.select_one('.detailBtn')['href'][1:]
+        fetch_date = utils.times.today(settings.DATE_FORMAT)
 
         jigyosyo_dict = {
             "jigyosyo_cd": jigyosyo_code,

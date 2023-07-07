@@ -1,16 +1,7 @@
-import time
-from . import const
-from datetime import datetime
-
 
 def attr_dict(iter, key, value):
     return {item[key]:item[value] for item in iter}
 
-def wait():
-    return time.sleep(const.DEFAULT_SELENIUM_SLEEP_TIME)
-
-def today():
-    return datetime.now().strftime(const.DATE_FORMAT)
 
 def make_dict_from_variables(*args):
     my_dict = {}
