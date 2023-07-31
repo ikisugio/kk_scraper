@@ -71,7 +71,7 @@ class KK_Selenium():
         jigyosyo_html_list = list(map(lambda x: x.get_attribute("outerHTML"), jigyosyo_all))
         jigyosyo_soup_list = list(map(lambda x: BeautifulSoup(x, 'html.parser'), jigyosyo_html_list))
         jigyosyo_name_list = list(map(self.make_jigyosyo_dict, jigyosyo_soup_list))
-        return None
+        return jigyosyo_name_list
 
 
     def make_jigyosyo_dict(self, soup):
@@ -88,7 +88,6 @@ class KK_Selenium():
                 "jigyosyo_url": jigyosyoUrl,
             },
         }
-
         return jigyosyo_dict
 
 
